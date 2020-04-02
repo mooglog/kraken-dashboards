@@ -1,0 +1,13 @@
+# dockerfile for octivium
+
+FROM python:3.7
+
+RUN mkdir /src/
+
+WORKDIR /src/
+
+COPY ./octivium/ /src/
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "manage.py", "runserver"]

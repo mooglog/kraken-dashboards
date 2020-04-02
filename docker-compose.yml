@@ -1,0 +1,108 @@
+##Kraken Dashboards##
+
+version: "3.7"
+
+
+
+# The primary app data network
+
+networks:
+  kraken_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24
+
+# Named Volumes for App data
+volumes:
+  kraken-mariadb-data:
+  kraken-influxdb-data:
+
+services:
+# Make sure you set the root password.
+# #! export MYSQL_ROOT_PASSWORD=[the dang password]
+  mariadb:
+    environment:
+      - MYSQL_ROOT_PASSWORD
+    image: mariadb:latest
+    networks:
+      kraken_net:
+        ipv4_address: 10.0.0.10
+        aliases:
+          - mariadb
+    volumes:
+      - type: volume
+        source: kraken-mariadb-data
+        target: /var/lib/mysql
+    restart: unless-stopped
+    ports:
+      - "3306"
+    container_name: kraken-mariadb
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "1"
+
+## InfluxDB stores data in time series stores API metrics data
+  influxdb:
+    image: "influxdb:latest"
+    networks:
+      kraken_net:
+        ipv4_address: 10.0.0.11
+        aliases: 
+          - influxdb
+    ports:
+      - target: 8086
+#        published: 8086
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: volume
+        source: kraken-influxdb-data
+        target: /var/lib/influxdb
+    restart: unless-stopped
+    container_name: kraken-influxdb
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "1"
+
+# Front end and datasource endpoint
+  grafana:
+    image: "grafana/grafana:latest"
+    networks:
+      kraken_net:
+        ipv4_address: 10.0.0.12
+        aliases: 
+          - grafana
+    ports:
+      - target: 3000
+        published: 80
+        protocol: tcp
+        mode: host
+    restart: unless-stopped
+    container_name: kraken-grafana
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "1"
+
+  kraken:
+    build: .kraken
+    command: #none right now
+    networks:
+      kraken_net:
+        ipv4_address: 10.0.0.5
+        aliases:
+            - kraken
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    depends_on:
+      - kraken-mariadb02
+    container_name: kraken
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "1"
+
