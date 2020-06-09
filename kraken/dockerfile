@@ -10,4 +10,4 @@ COPY ./octivium/ /src/
 
 RUN pip install -r requirements.txt
 
-CMD ["python", "manage.py", "runserver"]
+CMD ["python", "main.py"]
