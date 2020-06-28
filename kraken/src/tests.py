@@ -1,4 +1,5 @@
 import unittest
+from sample import sample_response
 
 
 class MyTestCase(unittest.TestCase):

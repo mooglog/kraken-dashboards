@@ -1,69 +1,60 @@
 import krakenex
-from datetime import datetime
-from functools import wraps
-from dataclasses import dataclass
 import configparser
-from influxdb import InfluxDBClient, DataFrameClient
+from datetime import datetime
+import json
+from objects import OpenPosition
 import asyncio
-from sample import sample_response
-
-
+from dataclasses import asdict
+from influxdb import InfluxDBClient
 config = configparser.ConfigParser()
 config.read('kraken.conf')
 
 api = krakenex.API(key=config['default']['key'], secret=config['default']['secret'])
 
+database = 'kraken'
+influx = InfluxDBClient(
+    host='localhost',
+    port=8086,
+    username='',
+    password='',
+    database=database
+)
 
-influx = InfluxDBClient(host=None, database=None)
-
-call_counter = 0
-max_calls = 15  # basic user account
-last_call = None  #Time stamp of last api call
-
-
-def rate_limiter(func):
-    def wraps(last, counter, *args, **kwargs):
-
-        return func
-
-
-@dataclass()
-class OpenPosition:
-    """
-    An object and methods for open positions
-    """
-    ordertxid: str
-    posstatus: str
-    pair: str
-    time: datetime
-    type: str
-    ordertype: str
-    cost: float
-    fee: float
-    vol: float
-    vol_closed: float
-    margin: float
-    value: float
-    net: float
-    terms: str
-    rollovertm: datetime
-    misc: str
-    oflags: str
-
+influx.create_database(database)
+influx.create_retention_policy('90days_default', '90d', replication='1', database=database, default=True)
 
 req_data = {'docalcs': 'True'}
 
 
-resp = api.query_private('OpenPositions', req_data)
+async def get_open_positions():
+
+    while True:
+        resp = api.query_private('OpenPositions', req_data)
+        positions = [OpenPosition(**v) for k, v in resp['result'].items()]
+        for position in positions:
+            fields = asdict(position)
+            print(fields)
+            json_body = [
+                {
+                    "measurement": "kraken.stats.OpenPositions",
+                    "tags": {
+                        "ordertxid": f"open_position.{position.ordertxid}"
+                    },
+                    "time": datetime.utcfromtimestamp(position.time),
+                    "fields": fields
+                }
+            ]
+            print(json_body)
+            influx.write_points(json_body)
+
+        await asyncio.sleep(60)
 
 
-positions = [OpenPosition(**v) for k, v in resp['result'].items()]
+loop = asyncio.get_event_loop()
 
-for position in positions:
-    print(position)
-
-
-
+if __name__ == "__main__":
+    asyncio.ensure_future(get_open_positions())
+    loop.run_forever()
 
 
 
