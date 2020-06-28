@@ -33,19 +33,22 @@ async def get_open_positions():
         positions = [OpenPosition(**v) for k, v in resp['result'].items()]
         for position in positions:
             fields = asdict(position)
-            print(fields)
+            fields.pop('time')
+            fields.pop('ordertxid')
             json_body = [
                 {
                     "measurement": "kraken.stats.OpenPositions",
                     "tags": {
-                        "ordertxid": f"open_position.{position.ordertxid}"
+                        "ordertxid": position.ordertxid,
+                        "pair": position.pair,
+                        "posstatus": position.posstatus
                     },
-                    "time": datetime.utcfromtimestamp(position.time),
                     "fields": fields
                 }
             ]
             print(json_body)
-            influx.write_points(json_body)
+            wrt = influx.write_points(json_body)
+            print(wrt)
 
         await asyncio.sleep(60)
 

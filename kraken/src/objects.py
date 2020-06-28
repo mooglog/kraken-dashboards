@@ -21,6 +21,6 @@ class OpenPosition:
     value: float
     net: float
     terms: str
-    rollovertm: datetime
+    rollovertm: float
     misc: str
     oflags: str
