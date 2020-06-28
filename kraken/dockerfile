@@ -6,7 +6,7 @@ RUN mkdir /src/
 
 WORKDIR /src/
 
-COPY ./octivium/ /src/
+COPY /src/ /src/
 
 RUN pip install -r requirements.txt
 

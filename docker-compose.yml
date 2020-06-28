@@ -11,7 +11,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 10.0.0.0/24
+        - subnet: 10.0.1.0/24
 
 # Named Volumes for App data
 volumes:
@@ -21,34 +21,34 @@ volumes:
 services:
 # Make sure you set the root password.
 # #! export MYSQL_ROOT_PASSWORD=[the dang password]
-  mariadb:
-    environment:
-      - MYSQL_ROOT_PASSWORD
-    image: mariadb:latest
-    networks:
-      kraken_net:
-        ipv4_address: 10.0.0.10
-        aliases:
-          - mariadb
-    volumes:
-      - type: volume
-        source: kraken-mariadb-data
-        target: /var/lib/mysql
-    restart: unless-stopped
-    ports:
-      - "3306"
-    container_name: kraken-mariadb
-    logging:
-      options:
-        max-size: "50M"
-        max-file: "1"
+  # mariadb:
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD
+  #   image: mariadb:latest
+  #   networks:
+  #     kraken_net:
+  #       ipv4_address: 10.0.1.10
+  #       aliases:
+  #         - mariadb
+  #   volumes:
+  #     - type: volume
+  #       source: kraken-mariadb-data
+  #       target: /var/lib/mysql
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3306"
+  #   container_name: kraken-mariadb
+  #   logging:
+  #     options:
+  #       max-size: "50M"
+  #       max-file: "1"
 
 ## InfluxDB stores data in time series stores API metrics data
   influxdb:
     image: "influxdb:latest"
     networks:
       kraken_net:
-        ipv4_address: 10.0.0.11
+        ipv4_address: 10.0.1.11
         aliases: 
           - influxdb
     ports:
@@ -72,7 +72,7 @@ services:
     image: "grafana/grafana:latest"
     networks:
       kraken_net:
-        ipv4_address: 10.0.0.12
+        ipv4_address: 10.0.1.12
         aliases: 
           - grafana
     ports:
@@ -89,18 +89,17 @@ services:
 
   kraken:
     build: .kraken
-    command: #none right now
     networks:
       kraken_net:
-        ipv4_address: 10.0.0.5
+        ipv4_address: 10.0.1.5
         aliases:
             - kraken
     ports:
       - "8001:8000"
     restart: unless-stopped
     depends_on:
-      - kraken-mariadb02
-    container_name: kraken
+      - kraken-influxdb
+    container_name: kraken-loader
     logging:
       options:
         max-size: "50M"
