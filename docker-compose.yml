@@ -44,7 +44,7 @@ services:
   #       max-file: "1"
 
 ## InfluxDB stores data in time series stores API metrics data
-  influxdb:
+  kraken-influxdb:
     image: "influxdb:latest"
     networks:
       kraken_net:
@@ -87,8 +87,8 @@ services:
         max-size: "50M"
         max-file: "1"
 
-  kraken:
-    build: .kraken
+  kraken-loader:
+    build: kraken/
     networks:
       kraken_net:
         ipv4_address: 10.0.1.5
