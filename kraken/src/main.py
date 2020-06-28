@@ -33,7 +33,6 @@ async def get_open_positions():
         positions = [OpenPosition(**v) for k, v in resp['result'].items()]
         for position in positions:
             fields = asdict(position)
-            fields.pop('time')
             fields.pop('ordertxid')
             json_body = [
                 {
@@ -46,17 +45,34 @@ async def get_open_positions():
                     "fields": fields
                 }
             ]
-            print(json_body)
-            wrt = influx.write_points(json_body)
-            print(wrt)
 
+            wrt = influx.write_points(json_body)
+            print(f'wrote positions')
         await asyncio.sleep(60)
+
+
+async def get_balance():
+
+    while True:
+        resp = api.query_private('Balance')
+        json_body = [
+            {
+                "measurement": "kraken.stats.AccountBalance",
+                "fields": resp['result']
+            }
+        ]
+        influx.write_points(json_body)
+        print(f'wrote account balance')
+        await asyncio.sleep(360)
+
+
 
 
 loop = asyncio.get_event_loop()
 
 if __name__ == "__main__":
     asyncio.ensure_future(get_open_positions())
+    asyncio.ensure_future(get_balance())
     loop.run_forever()
 
 
