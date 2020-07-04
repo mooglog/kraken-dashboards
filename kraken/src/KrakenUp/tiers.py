@@ -1,5 +1,0 @@
-
-
-tiers = {
-    'none': int
-}

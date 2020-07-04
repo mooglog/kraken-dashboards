@@ -23,6 +23,7 @@ influx = InfluxDBClient(
 influx.create_database(database)
 influx.create_retention_policy('90days_default', '90d', replication='1', database=database, default=True)
 
+
 req_data = {'docalcs': 'True'}
 
 
