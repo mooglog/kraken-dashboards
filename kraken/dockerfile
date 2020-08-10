@@ -1,4 +1,4 @@
-# dockerfile for octivium
+# dockerfile for kraken-dash
 
 FROM python:3.7
 

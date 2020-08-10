@@ -46,7 +46,7 @@ async def get_open_positions():
                     "fields": fields
                 }
             ]
-
+            print(json_body)
             wrt = influx.write_points(json_body)
             print(f'wrote positions')
         await asyncio.sleep(60)
@@ -55,25 +55,32 @@ async def get_open_positions():
 async def get_balance():
 
     while True:
-        resp = api.query_private('Balance')
+        resp = api.query_private('Balance', req_data)
+        print(f"Balance {resp.get('result')}")
+        await asyncio.sleep(360)
+
+
+async def get_trade_balance():
+
+    while True:
+        resp = api.query_private('TradeBalance')
         json_body = [
             {
-                "measurement": "kraken.stats.AccountBalance",
+                "measurement": "kraken.stats.TradeBalance",
                 "fields": resp['result']
             }
         ]
         influx.write_points(json_body)
-        print(f'wrote account balance')
-        await asyncio.sleep(360)
-
-
+        print(f"Tradebal {resp.get('result')}")
+        await asyncio.sleep(60)
 
 
 loop = asyncio.get_event_loop()
 
 if __name__ == "__main__":
     asyncio.ensure_future(get_open_positions())
-    asyncio.ensure_future(get_balance())
+    # asyncio.ensure_future(get_balance())
+    asyncio.ensure_future(get_trade_balance())
     loop.run_forever()
 
 

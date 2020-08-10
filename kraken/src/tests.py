@@ -1,11 +1,21 @@
 import unittest
-from sample import sample_response
+from .stats import Stats
 
 
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)
+
+    def _series_helper(self):
+        stat = Stats(
+            series_name='test',
+            tags=['tag1', 'tag2'],
+            fields=['field', 'field1', 'field2']
+        )
+        self.assertEqual(stat, stat)
+
+
 
 
 if __name__ == '__main__':
     unittest.main()
+
+

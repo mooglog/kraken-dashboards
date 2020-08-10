@@ -17,6 +17,8 @@ networks:
 volumes:
   kraken-mariadb-data:
   kraken-influxdb-data:
+  kraken-grafana-data:
+
 
 services:
 # Make sure you set the root password.
@@ -77,9 +79,16 @@ services:
           - grafana
     ports:
       - target: 3000
-        published: 80
+        published: 81
         protocol: tcp
         mode: host
+    volumes:
+      - type: volume
+        source: kraken-grafana-data
+        target: /var/lib/grafana
+      - type: bind
+        source: ./config/grafana
+        target: /usr/local/etc/grafana/
     restart: unless-stopped
     container_name: kraken-grafana
     logging:
