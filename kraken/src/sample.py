@@ -79,3 +79,17 @@ sample_response = {
     }
   }
 }
+
+fields = asdict(position)
+            fields.pop('ordertxid')
+            json_body = [
+                {
+                    "measurement": "kraken.stats.OpenPositions",
+                    "tags": {
+                        "ordertxid": position.ordertxid,
+                        "pair": position.pair,
+                        "posstatus": position.posstatus
+                    },
+                    "fields": fields
+                }
+            ]
